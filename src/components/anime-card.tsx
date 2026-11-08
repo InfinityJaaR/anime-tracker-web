@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { displayTitle, type Anime } from "@/lib/catalog";
 
-export function AnimeCard({ anime }: { anime: Anime }) {
+export function AnimeCard({ anime, priority = false }: { anime: Anime; priority?: boolean }) {
   return (
     <Link
       href={`/anime/${anime.mal_id}`}
@@ -15,6 +15,7 @@ export function AnimeCard({ anime }: { anime: Anime }) {
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
           className="object-cover"
+          priority={priority}
         />
         {anime.score ? (
           <span className="absolute right-1.5 top-1.5 rounded bg-black/70 px-1.5 py-0.5 text-xs font-semibold text-white">
@@ -32,8 +33,8 @@ export function AnimeCard({ anime }: { anime: Anime }) {
 export function AnimeGrid({ items }: { items: Anime[] }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-      {items.map((a) => (
-        <AnimeCard key={a.mal_id} anime={a} />
+      {items.map((a, i) => (
+        <AnimeCard key={a.mal_id} anime={a} priority={i < 6} />
       ))}
     </div>
   );

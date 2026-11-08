@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { Synopsis } from "@/components/synopsis";
 import { ListControl } from "@/components/list-control";
 import { displayTitle, getAnime } from "@/lib/catalog";
 import type { ListEntry } from "@/lib/lists";
 import { createClient } from "@/lib/supabase/server";
+
+const STATUS_ES: Record<string, string> = {
+  "Finished Airing": "Finalizado",
+  "Currently Airing": "En emisión",
+  "Not yet aired": "Próximamente",
+};
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -60,7 +67,7 @@ export default async function AnimePage({ params }: Props) {
           {anime.type ? <div><dt className="inline text-muted">Tipo: </dt><dd className="inline">{anime.type}</dd></div> : null}
           {anime.episodes ? <div><dt className="inline text-muted">Episodios: </dt><dd className="inline">{anime.episodes}</dd></div> : null}
           {anime.year ? <div><dt className="inline text-muted">Año: </dt><dd className="inline">{anime.year}</dd></div> : null}
-          {anime.status ? <div><dt className="inline text-muted">Estado: </dt><dd className="inline">{anime.status}</dd></div> : null}
+          {anime.status ? <div><dt className="inline text-muted">Estado: </dt><dd className="inline">{STATUS_ES[anime.status] ?? anime.status}</dd></div> : null}
         </dl>
         <ul className="flex flex-wrap gap-2">
           {anime.genres?.map((g) => (
@@ -80,7 +87,7 @@ export default async function AnimePage({ params }: Props) {
             episodes: anime.episodes ?? null,
           }}
         />
-        {anime.synopsis && <p className="whitespace-pre-line text-sm leading-relaxed">{anime.synopsis}</p>}
+        {anime.synopsis && <Synopsis text={anime.synopsis} />}
       </div>
     </article>
   );

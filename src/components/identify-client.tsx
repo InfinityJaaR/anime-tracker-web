@@ -64,7 +64,11 @@ function ImageSearch() {
     <section className={box}>
       <h2 className="font-semibold">Buscar por imagen</h2>
       <p className="text-xs text-muted">Sube una captura de un episodio (vía trace.moe). No funciona bien con fanart.</p>
-      <input type="file" accept="image/*" onChange={(e) => pick(e.target.files?.[0] ?? null)} className="text-sm" />
+      <label className="flex cursor-pointer items-center gap-3 rounded-md border border-dashed border-border p-3 text-sm hover:border-accent">
+        <span className="rounded-md bg-surface-2 px-3 py-1.5">Elegir imagen</span>
+        <span className="min-w-0 truncate text-muted">{file ? file.name : "Ningún archivo seleccionado"}</span>
+        <input type="file" accept="image/*" onChange={(e) => pick(e.target.files?.[0] ?? null)} className="sr-only" />
+      </label>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {preview && <img src={preview} alt="Vista previa" className="max-h-48 rounded-md" />}
       <button onClick={search} disabled={!file || loading} className={btn}>

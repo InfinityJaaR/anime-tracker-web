@@ -4,6 +4,11 @@ import { NextResponse, type NextRequest } from "next/server";
 const PROTECTED = ["/lists", "/stats", "/friends"];
 
 export async function proxy(request: NextRequest) {
+  // IDs no numéricos: 404 real (notFound() dentro de una página en streaming responde 200).
+  if (/^\/anime\/(?!\d+\/?$)[^/]+\/?$/.test(request.nextUrl.pathname)) {
+    return NextResponse.rewrite(new URL("/_not-found-anime", request.url), { status: 404 });
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return NextResponse.next();
