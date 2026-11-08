@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { RandomPick } from "@/components/random-pick";
 import { isStatus, STATUSES, type ListEntry } from "@/lib/lists";
 import { createClient } from "@/lib/supabase/server";
-import { signOut } from "../login/actions";
 
 export const metadata: Metadata = { title: "Mis listas" };
 
@@ -34,9 +33,6 @@ export default async function ListsPage({ searchParams }: PageProps<"/lists">) {
         <h1 className="text-2xl font-bold">Mis listas</h1>
         <div className="flex items-center gap-2">
           <RandomPick ids={planIds} />
-          <form action={signOut}>
-            <button className="rounded-md border border-border px-3 py-1.5 text-sm">Salir</button>
-          </form>
         </div>
       </div>
 
