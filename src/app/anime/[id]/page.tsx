@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { ListControl } from "@/components/list-control";
 import { displayTitle, getAnime } from "@/lib/catalog";
+import type { ListEntry } from "@/lib/lists";
+import { createClient } from "@/lib/supabase/server";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -16,6 +19,22 @@ export default async function AnimePage({ params }: Props) {
   const malId = Number(id);
   if (!Number.isInteger(malId) || malId <= 0) notFound();
   const anime = await getAnime(malId);
+
+  let signedIn = false;
+  let entry: ListEntry | null = null;
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    signedIn = Boolean(data.user);
+    if (data.user) {
+      const res = await supabase
+        .from("list_entries")
+        .select("mal_id,status,score,progress,title,image,genres")
+        .eq("mal_id", malId)
+        .maybeSingle();
+      entry = (res.data as ListEntry | null) ?? null;
+    }
+  }
 
   return (
     <article className="grid gap-6 md:grid-cols-[240px_1fr]">
@@ -50,6 +69,17 @@ export default async function AnimePage({ params }: Props) {
             </li>
           ))}
         </ul>
+        <ListControl
+          signedIn={signedIn}
+          entry={entry}
+          anime={{
+            mal_id: anime.mal_id,
+            title: displayTitle(anime),
+            image: anime.images.jpg.image_url,
+            genres: anime.genres?.map((g) => g.name) ?? [],
+            episodes: anime.episodes ?? null,
+          }}
+        />
         {anime.synopsis && <p className="whitespace-pre-line text-sm leading-relaxed">{anime.synopsis}</p>}
       </div>
     </article>
