@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AnimeTracker (web)
 
-## Getting Started
+Versión web de [anime-tracker-app](https://github.com/InfinityJaaR/anime-tracker-app): listas de anime por estado, estadísticas con nivel de experiencia, anime al azar, amigos, búsqueda por imagen y un agente de IA con tu propia API key.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
+- Supabase (Auth + Postgres con RLS)
+- [Tenrai API](https://api.tenrai.org/v1) para el catálogo (esquema Jikan v4, IDs de MyAnimeList)
+- [trace.moe](https://trace.moe) para buscar por imagen
+- Anthropic / OpenAI / Gemini para el agente (clave del usuario)
+
+## Rutas
+
+| Ruta | Descripción |
+|---|---|
+| `/` | Descubrir: temporada actual y mejor valorados |
+| `/search` | Búsqueda con filtro de género (Client Component + Route Handler) |
+| `/anime/[id]` | Detalle y control de lista |
+| `/lists` | Listas por estado + botón al azar (requiere sesión) |
+| `/stats` | Nivel/XP, géneros favoritos, mejores notas |
+| `/friends`, `/friends/[username]` | Solicitudes, animes en común, géneros y favoritos del amigo |
+| `/identify` | Buscar por imagen y agente de IA |
+| `/login` | Registro e inicio de sesión |
+| `/api/anime/search`, `/api/trace`, `/api/ai` | Route Handlers |
+
+Cada sección con datos tiene `loading.tsx` y `error.tsx`.
+
+## Puesta en marcha
 
 ```bash
+npm install
+cp .env.example .env.local   # rellena las claves de Supabase
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Crea un proyecto en [Supabase](https://supabase.com).
+2. Ejecuta `supabase/migrations/0001_init.sql` en el SQL Editor.
+3. Copia la URL y la *anon key* (Project Settings → API) a `.env.local`.
+4. Si quieres registro inmediato, desactiva "Confirm email" en Authentication → Providers → Email.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Privacidad de la API key de IA
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+La key se escribe en el navegador, se envía a `/api/ai` solo para esa consulta y no se guarda ni se registra en el servidor. Solo se conserva en `localStorage` si marcas "Recordar".
 
-## Learn More
+## Nivel de experiencia
 
-To learn more about Next.js, take a look at the following resources:
+100 XP por anime completado + 2 XP por episodio visto. El nivel *n* empieza en 50·(n−1)² XP.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Despliegue
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Importa el repo en Vercel y define `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
