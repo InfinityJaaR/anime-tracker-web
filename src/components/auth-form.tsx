@@ -4,12 +4,22 @@ import { useActionState, useState } from "react";
 import { signIn, signUp, type AuthState } from "@/app/login/actions";
 
 const initial: AuthState = {};
+const input =
+  "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent";
+
+type Mode = "in" | "up";
 
 export function AuthForm() {
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [mode, setMode] = useState<Mode>("in");
+  // `key` remonta el formulario al cambiar de modo: así cada modo tiene su propio
+  // estado de acción y un error de registro no se queda pegado en "Iniciar sesión".
+  return (
+    <ModeForm key={mode} mode={mode} onToggle={() => setMode(mode === "in" ? "up" : "in")} />
+  );
+}
+
+function ModeForm({ mode, onToggle }: { mode: Mode; onToggle: () => void }) {
   const [state, action, pending] = useActionState(mode === "in" ? signIn : signUp, initial);
-  const input =
-    "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent";
 
   return (
     <form action={action} className="space-y-3 rounded-lg border border-border bg-surface p-6">
@@ -35,11 +45,7 @@ export function AuthForm() {
       >
         {pending ? "Enviando…" : mode === "in" ? "Entrar" : "Registrarme"}
       </button>
-      <button
-        type="button"
-        onClick={() => setMode(mode === "in" ? "up" : "in")}
-        className="w-full text-center text-sm text-muted underline"
-      >
+      <button type="button" onClick={onToggle} className="w-full text-center text-sm text-muted underline">
         {mode === "in" ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Entra"}
       </button>
     </form>

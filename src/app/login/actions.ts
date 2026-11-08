@@ -14,7 +14,15 @@ export async function signIn(_: AuthState, form: FormData): Promise<AuthState> {
     email: String(form.get("email") ?? ""),
     password: String(form.get("password") ?? ""),
   });
-  if (error) return { error: "Correo o contraseña incorrectos." };
+  if (error) {
+    if (error.code === "email_not_confirmed") {
+      return { error: "Confirma tu correo antes de entrar (revisa tu bandeja de entrada)." };
+    }
+    if (error.code === "invalid_credentials") {
+      return { error: "Correo o contraseña incorrectos. Si aún no tienes cuenta, regístrate." };
+    }
+    return { error: error.message };
+  }
   redirect("/lists");
 }
 
