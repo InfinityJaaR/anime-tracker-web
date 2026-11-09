@@ -37,6 +37,7 @@ export default async function AnimePage({ params }: Props) {
       const res = await supabase
         .from("list_entries")
         .select("mal_id,status,score,progress,title,image,genres")
+        .eq("user_id", data.user.id) // sin esto, un amigo con el mismo anime rompe maybeSingle()
         .eq("mal_id", malId)
         .maybeSingle();
       entry = (res.data as ListEntry | null) ?? null;

@@ -20,6 +20,7 @@ export default async function ListsPage({ searchParams }: PageProps<"/lists">) {
   const { data, error } = await supabase
     .from("list_entries")
     .select("mal_id,status,score,progress,title,image,genres")
+    .eq("user_id", auth.user.id) // RLS también deja leer a los amigos: filtrar siempre por dueño
     .order("updated_at", { ascending: false });
   if (error) throw new Error(error.message);
   const all = (data ?? []) as ListEntry[];

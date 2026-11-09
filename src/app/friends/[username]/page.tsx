@@ -25,7 +25,8 @@ export default async function FriendPage({ params }: Props) {
   // RLS solo devuelve las entradas de amigos aceptados (y las propias).
   const { data, error } = await supabase
     .from("list_entries")
-    .select("user_id,mal_id,status,score,progress,title,image,genres");
+    .select("user_id,mal_id,status,score,progress,title,image,genres")
+    .in("user_id", [auth.user.id, profile.id]);
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as (ListEntry & { user_id: string })[];
   const mine = rows.filter((r) => r.user_id === auth.user.id);

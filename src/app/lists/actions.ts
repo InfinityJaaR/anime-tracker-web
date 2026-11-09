@@ -39,7 +39,13 @@ export async function saveEntry(input: SaveInput): Promise<{ error?: string }> {
 
 export async function removeEntry(malId: number): Promise<{ error?: string }> {
   const supabase = await createClient();
-  const { error } = await supabase.from("list_entries").delete().eq("mal_id", malId);
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return { error: "Inicia sesión." };
+  const { error } = await supabase
+    .from("list_entries")
+    .delete()
+    .eq("user_id", data.user.id)
+    .eq("mal_id", malId);
   if (error) return { error: error.message };
   revalidatePath("/lists");
   return {};

@@ -14,7 +14,8 @@ export default async function StatsPage() {
 
   const { data, error } = await supabase
     .from("list_entries")
-    .select("mal_id,status,score,progress,title,image,genres");
+    .select("mal_id,status,score,progress,title,image,genres")
+    .eq("user_id", auth.user.id); // RLS también deja leer a los amigos: filtrar siempre por dueño
   if (error) throw new Error(error.message);
   const entries = (data ?? []) as ListEntry[];
 
