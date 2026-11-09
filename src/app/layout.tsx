@@ -24,8 +24,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
         <footer className="border-t border-border py-5 text-center text-xs text-muted">
           <nav aria-label="Pie de página" className="mb-2 flex justify-center gap-4">
-            <Link href="/privacidad" className="py-2 underline">Privacidad y términos</Link>
-            <Link href="/search" className="py-2 underline">Buscar anime</Link>
+            <Link href="/privacidad" className="inline-flex min-h-11 items-center px-2 underline">Privacidad y términos</Link>
+            <Link href="/search" className="inline-flex min-h-11 items-center px-2 underline">Buscar anime</Link>
           </nav>
           AnimeTracker es gratuito. La información de cada anime proviene de MyAnimeList.
         </footer>

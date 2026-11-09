@@ -38,6 +38,18 @@ function ImageSearch() {
 
   function pick(next: File | null) {
     if (preview) URL.revokeObjectURL(preview);
+    setHits([]);
+    setError(null);
+    let problem: string | null = null;
+    if (next && !next.type.startsWith("image/")) problem = "Ese archivo no es una imagen. Usa una captura en JPG, PNG o WebP.";
+    else if (next && next.size === 0) problem = "La imagen está vacía o dañada. Elige otra.";
+    else if (next && next.size > 8 * 1024 * 1024) problem = "La imagen pesa más de 8 MB. Usa una más pequeña.";
+    if (problem) {
+      setError(problem);
+      setFile(null);
+      setPreview(null);
+      return;
+    }
     setFile(next);
     setPreview(next ? URL.createObjectURL(next) : null);
   }
@@ -68,7 +80,7 @@ function ImageSearch() {
       </p>
       <p className="text-xs text-muted">
         La imagen se envía al servicio externo trace.moe para compararla; no la guardamos.{" "}
-        <Link href="/privacidad" className="underline">Más información</Link>
+        <Link href="/privacidad" className="inline-block py-2 underline">Más información</Link>
       </p>
       <label className="flex cursor-pointer items-center gap-3 rounded-md border border-dashed border-border p-3 text-sm hover:border-accent">
         <span className="rounded-md bg-surface-2 px-3 py-2">Elegir imagen</span>
@@ -76,7 +88,7 @@ function ImageSearch() {
         <input type="file" accept="image/*" onChange={(e) => pick(e.target.files?.[0] ?? null)} className="sr-only" />
       </label>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      {preview && <img src={preview} alt="Vista previa" className="max-h-48 rounded-md" />}
+      {preview && <img src={preview} alt="Vista previa" className="max-h-48 rounded-md" onError={() => pick(null)} />}
       <button onClick={search} disabled={!file || loading} className={btn}>
         {loading ? "Buscando…" : "Buscar con esta imagen"}
       </button>
@@ -160,7 +172,7 @@ function AiAgent() {
         Necesitas una clave de API propia de Anthropic, OpenAI o Google (la creas en la web del proveedor y el uso se cobra
         en tu cuenta con él). La clave pasa por nuestro servidor solo para enviar esta consulta al proveedor; no la
         guardamos.{" "}
-        <Link href="/privacidad" className="underline">Más información</Link>
+        <Link href="/privacidad" className="inline-block py-2 underline">Más información</Link>
       </p>
       <div className="grid gap-2 sm:grid-cols-2">
         <select aria-label="Proveedor de IA" value={provider} onChange={(e) => setProvider(e.target.value)} className={input}>
@@ -171,8 +183,8 @@ function AiAgent() {
         <input value={model} onChange={(e) => setModel(e.target.value)} placeholder="Modelo (opcional, déjalo vacío)" aria-label="Modelo (opcional)" className={input} />
       </div>
       <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Tu clave de API" aria-label="Tu clave de API" autoComplete="off" className={input} />
-      <label className="flex items-center gap-2 text-xs text-muted">
-        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+      <label className="flex min-h-11 items-center gap-3 text-xs text-muted">
+        <input className="h-5 w-5 shrink-0" type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
         Recordar la clave en este navegador (se guarda sin cifrar en este dispositivo)
       </label>
       <textarea

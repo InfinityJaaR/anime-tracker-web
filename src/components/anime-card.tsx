@@ -23,8 +23,8 @@ export function AnimeCard({ anime, priority = false }: { anime: Anime; priority?
           </span>
         ) : null}
       </div>
-      <p className="line-clamp-2 p-2 text-sm font-medium group-hover:text-accent">
-        {displayTitle(anime)}
+      <p className="p-2 text-sm font-medium group-hover:text-accent">
+        <span className="line-clamp-2">{displayTitle(anime)}</span>
       </p>
     </Link>
   );

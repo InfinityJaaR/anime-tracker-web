@@ -39,7 +39,7 @@ export function Synopsis({ text }: { text: string }) {
           type="button"
           onClick={toggle}
           disabled={loading}
-          className="rounded-md border border-accent px-3 py-2 text-sm font-medium text-accent disabled:opacity-60"
+          className="min-h-11 rounded-md border border-accent px-3 text-sm font-medium text-accent disabled:opacity-60"
         >
           {loading ? "Traduciendo…" : showing ? "Ver texto original" : "Traducir al español"}
         </button>

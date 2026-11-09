@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimeGrid, GridSkeleton } from "@/components/anime-card";
 import type { Anime, NamedResource } from "@/lib/catalog";
 import { fetchJson } from "@/lib/fetch-json";
@@ -25,6 +25,7 @@ export function SearchClient({ genres, initialQuery, initialGenre, initialPage }
   const [hasNext, setHasNext] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const pushHistory = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -35,7 +36,11 @@ export function SearchClient({ genres, initialQuery, initialGenre, initialPage }
       if (genre) url.set("genre", genre);
       if (page > 1) url.set("page", String(page));
       const qs = url.toString();
-      router.replace(qs ? `/search?${qs}` : "/search", { scroll: false });
+      const href = qs ? `/search?${qs}` : "/search";
+      // Cambiar de página crea una entrada en el historial; escribir solo la reemplaza.
+      if (pushHistory.current) router.push(href, { scroll: false });
+      else router.replace(href, { scroll: false });
+      pushHistory.current = false;
 
       setLoading(true);
       setError(null);
@@ -63,6 +68,7 @@ export function SearchClient({ genres, initialQuery, initialGenre, initialPage }
   const go = (delta: number) => {
     if (loading) return; // evita saltar varias páginas con clics repetidos
     setLoading(true);
+    pushHistory.current = true;
     setPage((p) => Math.max(1, p + delta));
   };
 

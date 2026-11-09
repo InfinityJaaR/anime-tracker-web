@@ -3,10 +3,10 @@ import { AnimeGrid } from "@/components/anime-card";
 import { getSeasonNow, getTopAnime } from "@/lib/catalog";
 
 const FEATURES = [
-  ["Listas", "Organiza lo que ves: viendo, plan de ver, pausado, abandonado y completado."],
-  ["Estadísticas", "Tus géneros favoritos de siempre y un nivel que sube con cada anime que terminas."],
-  ["Amigos", "Mira qué animes tienen en común y cuáles son sus favoritos."],
-  ["Identificar", "Encuentra un anime con una captura de pantalla o describiendo lo que recuerdas."],
+  ["Listas", "Organiza lo que ves: viendo, plan de ver, pausado, abandonado y completado.", "/lists"],
+  ["Estadísticas", "Tus géneros favoritos de siempre y un nivel que sube con cada anime que terminas.", "/stats"],
+  ["Amigos", "Mira qué animes tienen en común y cuáles son sus favoritos.", "/friends"],
+  ["Identificar", "Encuentra un anime con una captura de pantalla o describiendo lo que recuerdas.", "/identify"],
 ] as const;
 
 export default async function Home() {
@@ -27,10 +27,12 @@ export default async function Home() {
           </Link>
         </div>
         <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map(([title, text]) => (
-            <li key={title} className="rounded-lg bg-surface-2 p-3">
-              <p className="text-sm font-semibold">{title}</p>
-              <p className="mt-1 text-xs text-muted">{text}</p>
+          {FEATURES.map(([title, text, href]) => (
+            <li key={title}>
+              <Link href={href} className="block h-full rounded-lg bg-surface-2 p-3 hover:ring-1 hover:ring-accent">
+                <p className="text-sm font-semibold">{title} →</p>
+                <p className="mt-1 text-xs text-muted">{text}</p>
+              </Link>
             </li>
           ))}
         </ul>

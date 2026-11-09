@@ -26,10 +26,17 @@ export function ListControl({ signedIn, anime, entry }: Props) {
         <p className="text-sm font-medium">Guarda este anime en tus listas</p>
         <ul className="flex flex-wrap gap-1.5" aria-label="Listas disponibles">
           {STATUSES.map((s) => (
-            <li key={s.value} className="rounded-full bg-surface-2 px-3 py-1 text-xs text-muted">{s.label}</li>
+            <li key={s.value}>
+              <Link
+                href={`/login?mode=signup&next=${next}`}
+                className="inline-flex min-h-10 items-center rounded-full border border-border px-3 text-xs hover:border-accent"
+              >
+                {s.label}
+              </Link>
+            </li>
           ))}
         </ul>
-        <p className="text-xs text-muted">Es gratis. Necesitas una cuenta para guardar tu progreso y tus notas.</p>
+        <p className="text-xs text-muted">Elige una lista para empezar. Es gratis: solo necesitas una cuenta para guardar tu progreso y tus notas.</p>
         <div className="flex flex-wrap gap-2">
           <Link href={`/login?mode=signup&next=${next}`} className="rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg">
             Crear cuenta y guardar

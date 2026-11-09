@@ -11,8 +11,8 @@ const input =
 type Mode = "in" | "up";
 
 const COPY = {
-  in: { title: "Iniciar sesión", submit: "Iniciar sesión", pending: "Iniciando sesión…", toggle: "¿No tienes cuenta? Crear cuenta" },
-  up: { title: "Crear cuenta", submit: "Crear cuenta", pending: "Creando cuenta…", toggle: "¿Ya tienes cuenta? Iniciar sesión" },
+  in: { title: "Iniciar sesión", submit: "Iniciar sesión", pending: "Iniciando sesión…", toggle: "Soy nuevo: crear una cuenta gratis" },
+  up: { title: "Crear cuenta", submit: "Crear cuenta", pending: "Creando cuenta…", toggle: "Ya tengo cuenta: iniciar sesión" },
 };
 
 /** Mensajes de validación en español (los del navegador salen en su idioma). */
@@ -31,7 +31,16 @@ export function AuthForm({ initialMode = "in", next }: { initialMode?: Mode; nex
   const [mode, setMode] = useState<Mode>(initialMode);
   // `key` remonta el formulario al cambiar de modo: cada modo tiene su propio estado
   // y un error de registro no se queda pegado en "Iniciar sesión".
-  return <ModeForm key={mode} mode={mode} next={next} onToggle={() => setMode(mode === "in" ? "up" : "in")} />;
+  const toggle = () => {
+    const nextMode = mode === "in" ? "up" : "in";
+    setMode(nextMode);
+    // Refleja el modo en la URL para poder compartir o recargar /login?mode=signup.
+    const url = new URL(window.location.href);
+    if (nextMode === "up") url.searchParams.set("mode", "signup");
+    else url.searchParams.delete("mode");
+    window.history.replaceState(null, "", url);
+  };
+  return <ModeForm key={mode} mode={mode} next={next} onToggle={toggle} />;
 }
 
 function ModeForm({ mode, next, onToggle }: { mode: Mode; next: string; onToggle: () => void }) {
@@ -78,13 +87,13 @@ function ModeForm({ mode, next, onToggle }: { mode: Mode; next: string; onToggle
           type="password"
           minLength={6}
           required
-          aria-describedby="password-help"
+          aria-describedby={mode === "up" ? "password-help" : undefined}
           onInvalid={spanishValidity}
           onInput={clearValidity}
           className={input}
           autoComplete={mode === "in" ? "current-password" : "new-password"}
         />
-        <p id="password-help" className="text-xs text-muted">Mínimo 6 caracteres.</p>
+        {mode === "up" && <p id="password-help" className="text-xs text-muted">Mínimo 6 caracteres.</p>}
       </div>
       {state.error && <p role="alert" className="text-sm text-red-500">{state.error}</p>}
       {state.info && <p role="status" className="text-sm text-accent">{state.info}</p>}
@@ -96,11 +105,15 @@ function ModeForm({ mode, next, onToggle }: { mode: Mode; next: string; onToggle
       )}
       <button
         disabled={pending}
-        className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg disabled:opacity-60"
+        className="min-h-11 w-full rounded-md bg-accent px-4 text-sm font-medium text-accent-fg disabled:opacity-60"
       >
         {pending ? t.pending : t.submit}
       </button>
-      <button type="button" onClick={onToggle} className="w-full py-2 text-center text-sm text-accent underline">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="min-h-11 w-full rounded-md border border-border text-center text-sm font-medium hover:border-accent"
+      >
         {t.toggle}
       </button>
     </form>

@@ -119,7 +119,6 @@ export function Navbar() {
         <details ref={menuRef} className="group md:hidden">
           <summary
             className="flex min-h-11 cursor-pointer list-none items-center rounded-md border border-border px-4 text-sm [&::-webkit-details-marker]:hidden"
-            aria-label="Menú de navegación"
           >
             <span className="group-open:hidden">Menú</span>
             <span className="hidden group-open:inline">Cerrar</span>
