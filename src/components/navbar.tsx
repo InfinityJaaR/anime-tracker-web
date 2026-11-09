@@ -69,16 +69,17 @@ function AccountMenu({ user, onSignOut }: { user: SessionUser; onSignOut: () => 
 
 export function Navbar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDetailsElement>(null);
   const { state, signOut } = useSession();
+  const closeMenu = () => menuRef.current?.removeAttribute("open");
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur">
-      <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold tracking-tight">
+      <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4" aria-label="Principal">
+        <Link href="/" className="py-2 text-lg font-bold tracking-tight">
           Anime<span className="text-accent">Tracker</span>
         </Link>
 
@@ -87,7 +88,8 @@ export function Navbar() {
             <li key={l.href}>
               <Link
                 href={l.href}
-                className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+                aria-current={isActive(l.href) ? "page" : undefined}
+                className={`rounded-md px-3 py-2 text-sm transition-colors ${
                   isActive(l.href)
                     ? "bg-accent text-accent-fg"
                     : "text-muted hover:bg-surface-2 hover:text-foreground"
@@ -97,73 +99,72 @@ export function Navbar() {
               </Link>
             </li>
           ))}
-          <li>
+          <li className="min-w-32">
             {state.status === "in" ? (
               <AccountMenu user={state.user} onSignOut={signOut} />
-            ) : state.status === "out" ? (
+            ) : (
+              // Mientras se comprueba la sesión se muestra el enlace (no un hueco vacío).
               <Link
                 href="/login"
-                className="ml-2 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-surface-2"
+                aria-busy={state.status === "loading"}
+                className="ml-2 block rounded-md border border-border px-3 py-2 text-center text-sm hover:bg-surface-2"
               >
                 Iniciar sesión
               </Link>
-            ) : (
-              <span className="ml-2 block h-8 w-28 animate-pulse rounded-full bg-surface-2" />
             )}
           </li>
         </ul>
 
-        <button
-          type="button"
-          aria-label="Abrir menú"
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="rounded-md border border-border px-3 py-1.5 text-sm md:hidden"
-        >
-          {open ? "Cerrar" : "Menú"}
-        </button>
-      </nav>
-
-      {open && (
-        <ul className="border-t border-border bg-surface px-4 py-2 md:hidden">
-          {NAV_LINKS.map((l) => (
-            <li key={l.href}>
-              <Link
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className={`block rounded-md px-3 py-2 text-sm ${
-                  isActive(l.href) ? "bg-accent text-accent-fg" : "text-muted"
-                }`}
-              >
-                {l.label}
-              </Link>
-            </li>
-          ))}
-          <li className="mt-1 border-t border-border pt-2">
-            {state.status === "in" ? (
-              <div className="flex items-center justify-between px-3 py-1">
-                <span className="flex min-w-0 items-center gap-2 text-sm">
-                  <Avatar name={state.user.username} />
-                  <span className="truncate">{state.user.username}</span>
-                </span>
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    signOut();
-                  }}
-                  className="rounded-md border border-border px-3 py-1 text-sm"
+        {/* <details> funciona sin JavaScript: el menú abre aunque la página siga cargando. */}
+        <details ref={menuRef} className="group md:hidden">
+          <summary
+            className="flex min-h-11 cursor-pointer list-none items-center rounded-md border border-border px-4 text-sm [&::-webkit-details-marker]:hidden"
+            aria-label="Menú de navegación"
+          >
+            <span className="group-open:hidden">Menú</span>
+            <span className="hidden group-open:inline">Cerrar</span>
+          </summary>
+          <ul className="absolute inset-x-0 top-14 border-b border-border bg-surface px-4 py-2 shadow-lg">
+            {NAV_LINKS.map((l) => (
+              <li key={l.href}>
+                <Link
+                  href={l.href}
+                  onClick={closeMenu}
+                  aria-current={isActive(l.href) ? "page" : undefined}
+                  className={`block rounded-md px-3 py-3 text-base ${
+                    isActive(l.href) ? "bg-accent text-accent-fg" : "text-muted"
+                  }`}
                 >
-                  Cerrar sesión
-                </button>
-              </div>
-            ) : state.status === "out" ? (
-              <Link href="/login" onClick={() => setOpen(false)} className="block rounded-md px-3 py-2 text-sm text-muted">
-                Iniciar sesión
-              </Link>
-            ) : null}
-          </li>
-        </ul>
-      )}
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+            <li className="mt-1 border-t border-border pt-2">
+              {state.status === "in" ? (
+                <div className="flex items-center justify-between gap-2 px-3 py-1">
+                  <span className="flex min-w-0 items-center gap-2 text-sm">
+                    <Avatar name={state.user.username} />
+                    <span className="truncate">{state.user.username}</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      closeMenu();
+                      signOut();
+                    }}
+                    className="min-h-11 rounded-md border border-border px-3 text-sm"
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              ) : (
+                <Link href="/login" onClick={closeMenu} className="block rounded-md px-3 py-3 text-base text-muted">
+                  Iniciar sesión
+                </Link>
+              )}
+            </li>
+          </ul>
+        </details>
+      </nav>
     </header>
   );
 }

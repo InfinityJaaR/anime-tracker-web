@@ -5,7 +5,7 @@ const PROTECTED = ["/lists", "/stats", "/friends"];
 
 export async function proxy(request: NextRequest) {
   // IDs no numéricos: 404 real (notFound() dentro de una página en streaming responde 200).
-  if (/^\/anime\/(?!\d+\/?$)[^/]+\/?$/.test(request.nextUrl.pathname)) {
+  if (/^\/anime\/(?![1-9]\d{0,8}\/?$)[^/]+\/?$/.test(request.nextUrl.pathname)) {
     return NextResponse.rewrite(new URL("/_not-found-anime", request.url), { status: 404 });
   }
 
@@ -30,7 +30,8 @@ export async function proxy(request: NextRequest) {
   if (!data.user && PROTECTED.some((p) => pathname.startsWith(p))) {
     const login = request.nextUrl.clone();
     login.pathname = "/login";
-    login.search = "";
+    // Vuelve a la página pedida después de entrar, y explica por qué se pidió la sesión.
+    login.search = `?next=${encodeURIComponent(pathname + request.nextUrl.search)}`;
     return NextResponse.redirect(login);
   }
   return response;

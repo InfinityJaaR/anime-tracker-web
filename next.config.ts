@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // El indicador de desarrollo tapaba contenido en móvil durante las pruebas.
+  devIndicators: false,
   turbopack: {
     rules: {
       "*.css": {

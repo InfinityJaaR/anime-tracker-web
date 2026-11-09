@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Synopsis } from "@/components/synopsis";
 import { ListControl } from "@/components/list-control";
+import { Synopsis } from "@/components/synopsis";
 import { displayTitle, getAnime } from "@/lib/catalog";
+import { genreEs, TYPE_ES } from "@/lib/genres";
 import type { ListEntry } from "@/lib/lists";
 import { createClient } from "@/lib/supabase/server";
 
@@ -15,17 +16,19 @@ const STATUS_ES: Record<string, string> = {
 
 type Props = { params: Promise<{ id: string }> };
 
+const parseId = (id: string) => (/^[1-9]\d{0,8}$/.test(id) ? Number(id) : null);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const anime = await getAnime(Number(id)).catch(() => null);
-  return { title: anime ? displayTitle(anime) : "Anime" };
+  const malId = parseId((await params).id);
+  const anime = malId ? await getAnime(malId).catch(() => null) : null;
+  return { title: anime ? displayTitle(anime) : "Anime no encontrado" };
 }
 
 export default async function AnimePage({ params }: Props) {
-  const { id } = await params;
-  const malId = Number(id);
-  if (!Number.isInteger(malId) || malId <= 0) notFound();
+  const malId = parseId((await params).id);
+  if (!malId) notFound();
   const anime = await getAnime(malId);
+  if (!anime) notFound();
 
   let signedIn = false;
   let entry: ListEntry | null = null;
@@ -44,6 +47,13 @@ export default async function AnimePage({ params }: Props) {
     }
   }
 
+  const facts: [string, string][] = [];
+  if (anime.score) facts.push(["Nota en MyAnimeList", `★ ${anime.score}`]);
+  if (anime.type) facts.push(["Formato", TYPE_ES[anime.type] ?? anime.type]);
+  if (anime.episodes) facts.push(["Episodios", String(anime.episodes)]);
+  if (anime.year) facts.push(["Año", String(anime.year)]);
+  if (anime.status) facts.push(["Estado", STATUS_ES[anime.status] ?? anime.status]);
+
   return (
     <article className="grid gap-6 md:grid-cols-[240px_1fr]">
       <div className="relative mx-auto aspect-[2/3] w-48 overflow-hidden rounded-lg bg-surface-2 md:w-full">
@@ -58,22 +68,23 @@ export default async function AnimePage({ params }: Props) {
       </div>
       <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">{displayTitle(anime)}</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">{displayTitle(anime)}</h1>
           {anime.title_english && anime.title_english !== anime.title && (
             <p className="text-sm text-muted">{anime.title}</p>
           )}
         </div>
         <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
-          {anime.score ? <div><dt className="inline text-muted">Nota: </dt><dd className="inline font-semibold">★ {anime.score}</dd></div> : null}
-          {anime.type ? <div><dt className="inline text-muted">Tipo: </dt><dd className="inline">{anime.type}</dd></div> : null}
-          {anime.episodes ? <div><dt className="inline text-muted">Episodios: </dt><dd className="inline">{anime.episodes}</dd></div> : null}
-          {anime.year ? <div><dt className="inline text-muted">Año: </dt><dd className="inline">{anime.year}</dd></div> : null}
-          {anime.status ? <div><dt className="inline text-muted">Estado: </dt><dd className="inline">{STATUS_ES[anime.status] ?? anime.status}</dd></div> : null}
+          {facts.map(([k, v]) => (
+            <div key={k}>
+              <dt className="inline text-muted">{k}: </dt>
+              <dd className="inline font-medium">{v}</dd>
+            </div>
+          ))}
         </dl>
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex flex-wrap gap-2" aria-label="Géneros">
           {anime.genres?.map((g) => (
             <li key={g.mal_id} className="rounded-full bg-surface-2 px-3 py-1 text-xs">
-              {g.name}
+              {genreEs(g.name)}
             </li>
           ))}
         </ul>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { fetchJson } from "@/lib/fetch-json";
 
 export function Synopsis({ text }: { text: string }) {
   const [translated, setTranslated] = useState<string | null>(null);
@@ -9,33 +10,42 @@ export function Synopsis({ text }: { text: string }) {
   const [error, setError] = useState<string | null>(null);
 
   async function toggle() {
+    if (loading) return;
     if (translated) return setShowing((v) => !v);
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/translate", {
+      const json = await fetchJson<{ text: string }>("/api/translate", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ text }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
       setTranslated(json.text);
       setShowing(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo traducir");
+      setError(e instanceof Error ? e.message : "No se pudo traducir.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="space-y-2">
+    <section className="space-y-2" aria-labelledby="sinopsis">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="sinopsis" className="font-semibold">
+          Sinopsis {showing ? "(traducida automáticamente)" : "(en inglés)"}
+        </h2>
+        <button
+          type="button"
+          onClick={toggle}
+          disabled={loading}
+          className="rounded-md border border-accent px-3 py-2 text-sm font-medium text-accent disabled:opacity-60"
+        >
+          {loading ? "Traduciendo…" : showing ? "Ver texto original" : "Traducir al español"}
+        </button>
+      </div>
+      {error && <p className="text-sm text-red-500">{error}</p>}
       <p className="whitespace-pre-line text-sm leading-relaxed">{showing && translated ? translated : text}</p>
-      <button type="button" onClick={toggle} disabled={loading} className="text-xs text-accent underline disabled:opacity-60">
-        {loading ? "Traduciendo…" : showing ? "Ver original" : "Traducir al español"}
-      </button>
-      {error && <p className="text-xs text-red-500">{error}</p>}
-    </div>
+    </section>
   );
 }

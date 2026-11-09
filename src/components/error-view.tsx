@@ -5,7 +5,9 @@ function friendlyMessage(message: string): string {
     return "Supabase no está configurado. Define NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local y reinicia el servidor.";
   if (/Could not find the table|schema cache|does not exist/i.test(message))
     return "Faltan las tablas en Supabase. Ejecuta supabase/migrations/0001_init.sql en el SQL Editor.";
-  return message || "Error inesperado.";
+  if (/Tenrai|respondió|catálogo|fetch failed|ECONN|timeout/i.test(message))
+    return "El catálogo de anime no está disponible ahora. Intenta de nuevo en un momento.";
+  return message || "Ocurrió un error inesperado. Intenta de nuevo.";
 }
 
 export function ErrorView({
